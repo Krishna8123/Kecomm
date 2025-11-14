@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Your Shopping Cart 🛒</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <style>
+        body {
+          background: #f4f6fb;
+          font-family: 'Poppins', sans-serif;
+        }
+
+        .cart-container {
+          max-width: 1200px;
+          margin: 60px auto;
+          padding: 40px;
+          background: #ffffff;
+          border-radius: 20px;
+          box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+          animation: fadeIn 0.6s ease-in-out;
+        }
+
+        .cart-container h2 {
+          text-align: center;
+          color: #2563eb;
+          font-weight: 700;
+          margin-bottom: 30px;
+          font-size: 1.8em;
+        }
+
+        /* Error Message */
+        .error-message {
+          color: #dc2626;
+          background: #fee2e2;
+          border: 1px solid #fecaca;
+          padding: 12px;
+          border-radius: 8px;
+          margin-bottom: 20px;
+          text-align: center;
+          font-weight: 600;
+        }
+
+        /* Empty Cart */
+        .empty-cart {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 80px 0;
+          text-align: center;
+          border-radius: 15px;
+          background: linear-gradient(180deg, #f9fbff 0%, #ffffff 100%);
+        }
+
+        .empty-cart img {
+          width: 240px;
+          margin-bottom: 25px;
+          filter: drop-shadow(0 6px 12px rgba(37, 99, 235, 0.1));
+          animation: float 2.5s ease-in-out infinite;
+        }
+
+        .empty-cart h3 {
+          color: #1e293b;
+          font-weight: 600;
+          font-size: 1.4em;
+          margin-bottom: 10px;
+        }
+
+        .empty-cart p {
+          color: #64748b;
+          font-size: 1em;
+          margin-bottom: 25px;
+        }
+
+        .continue-btn {
+          display: inline-block;
+          background: linear-gradient(90deg, #2563eb, #38bdf8);
+          color: #fff;
+          padding: 12px 26px;
+          border-radius: 10px;
+          text-decoration: none;
+          font-weight: 600;
+          transition: all 0.3s ease;
+          box-shadow: 0 3px 15px rgba(37, 99, 235, 0.3);
+        }
+
+        .continue-btn:hover {
+          background: linear-gradient(90deg, #1d4ed8, #0ea5e9);
+          transform: translateY(-3px);
+          box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+        }
+
+        /* Cart Table */
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 20px;
+          background: #ffffff;
+          border-radius: 15px;
+          overflow: hidden;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        th, td {
+          padding: 15px;
+          text-align: center;
+          border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+          background: linear-gradient(90deg, #2563eb, #38bdf8);
+          color: white;
+          font-weight: 600;
+        }
+
+        tr:hover td {
+          background: #f1f5ff;
+        }
+
+        td img {
+          width: 80px;
+          border-radius: 10px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Buttons inside table */
+        .cart-actions button {
+          background: #2563eb;
+          color: #fff;
+          border: none;
+          border-radius: 6px;
+          padding: 6px 12px;
+          cursor: pointer;
+          font-weight: 600;
+          transition: all 0.3s ease;
+        }
+
+        .cart-actions button:hover {
+          background: #1d4ed8;
+          transform: scale(1.05);
+        }
+
+        .remove-btn {
+          background: #ef4444 !important;
+        }
+
+        .remove-btn:hover {
+          background: #dc2626 !important;
+        }
+
+        /* Grand Total Section */
+        tfoot td {
+          font-weight: 700;
+          color: #1e293b;
+          font-size: 1.05em;
+        }
+
+        /* Proceed Button */
+        .proceed-btn {
+          background: linear-gradient(90deg, #22c55e, #16a34a);
+          color: #fff;
+          padding: 12px 25px;
+          border-radius: 10px;
+          border: none;
+          font-weight: 600;
+          font-size: 1.05em;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          box-shadow: 0 3px 10px rgba(22, 163, 74, 0.3);
+        }
+
+        .proceed-btn:hover {
+          background: linear-gradient(90deg, #16a34a, #15803d);
+          transform: translateY(-3px);
+          box-shadow: 0 8px 20px rgba(22, 163, 74, 0.4);
+        }
+
+        /* Animations */
+        @keyframes float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-8px); }
+          100% { transform: translateY(0px); }
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(15px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+
+<body>
+<div class="cart-container">
+    <h2>Your Shopping Cart 🛍️</h2>
+
+    <!-- Error Message -->
+    <div th:if="${errorMessage}" class="error-message">
+        <p th:text="${errorMessage}"></p>
+    </div>
+
+    <!-- Empty Cart -->
+    <div th:if="${#lists.isEmpty(items)}" class="empty-cart">
+        <img src="/images/empty-cart.png" alt="Empty Cart" />
+        <h3>Oops! Your cart is empty</h3>
+        <p>Looks like you haven’t added anything yet. Let’s fix that!</p>
+        <a href="/home" class="continue-btn">
+            <i class="fa-solid fa-arrow-left"></i> Continue Shopping
+        </a>
+    </div>
+
+    <!-- Cart Table -->
+    <div th:if="${!#lists.isEmpty(items)}">
+        <table>
+            <thead>
+            <tr>
+                <th>Image</th>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="item : ${items}">
+                <td><img th:src="@{'/images/' + ${item.product.imageName}}" alt="Product" /></td>
+                <td>
+                    <b th:text="${item.product.name}"></b><br>
+                    <p th:text="${item.product.description}"></p>
+                </td>
+                <td th:text="${item.quantity}"></td>
+                <td>₹ <span th:text="${item.product.price}"></span></td>
+                <td>₹ <span th:text="${#numbers.formatDecimal(item.product.price * item.quantity, 0, 'COMMA', 2, 'POINT')}"></span></td>
+                <td class="cart-actions">
+                    <form th:action="@{'/cart/increase/' + ${item.product.id}}" method="post" style="display:inline;">
+                        <button type="submit">+</button>
+                    </form>
+                    <form th:action="@{'/cart/decrease/' + ${item.product.id}}" method="post" style="display:inline;">
+                        <button type="submit">-</button>
+                    </form>
+                    <form th:action="@{'/cart/remove/' + ${item.product.id}}" method="post" style="display:inline;">
+                        <button type="submit" class="remove-btn">Remove</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+
+            <tfoot>
+            <tr>
+                <td colspan="4" style="text-align: right;">Grand Total:</td>
+                <td colspan="2">₹ <span th:text="${#numbers.formatDecimal(cartTotal, 0, 'COMMA', 2, 'POINT')}"></span></td>
+            </tr>
+            </tfoot>
+        </table>
+
+        <div style="text-align: right; margin-top: 25px;">
+            <form th:action="@{/cart/proceedToBuy}" method="post">
+                <button type="submit" class="proceed-btn">Proceed to Buy</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
